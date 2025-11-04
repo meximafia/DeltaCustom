@@ -10,11 +10,15 @@ local minecraftFont = Enum.Font.Arcade
 local logFileName = "DeltaCustom_logs.txt"
 
 local function escribirLog(mensaje, tipoError)
-    local timestamp = os.date("[%Y-%m-%d %H:%M:%S]")
-    local tipoStr = tipoError or "INFO"
-    local logEntry = timestamp .. " [" .. tipoStr .. "] " .. tostring(mensaje) .. "\n"
-    
     local success = pcall(function()
+        local timestamp = "N/A"
+        if os and os.date then
+            timestamp = os.date("[%Y-%m-%d %H:%M:%S]")
+        end
+        
+        local tipoStr = tipoError or "INFO"
+        local logEntry = timestamp .. " [" .. tipoStr .. "] " .. tostring(mensaje) .. "\n"
+        
         local existingLogs = ""
         if isfile and isfile(logFileName) then
             existingLogs = readfile(logFileName)
@@ -28,7 +32,7 @@ local function escribirLog(mensaje, tipoError)
     end)
     
     if not success then
-        warn("Error al escribir log: " .. logEntry)
+        warn("Error al escribir log: " .. tostring(mensaje))
     end
 end
 
@@ -785,78 +789,90 @@ local function crearSeleccionIdioma()
         screenGui.Name = "DeltaConfigIntro"
         screenGui.Parent = CoreGui
         screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    local fondo = Instance.new("Frame")
-    fondo.Size = UDim2.new(1, 0, 1, 0)
-    fondo.BackgroundColor3 = colores.fondo
-    fondo.BackgroundTransparency = 0.2
-    fondo.Parent = screenGui
-    
-    contenedor = Instance.new("Frame")
-    contenedor.Size = UDim2.new(0, 450, 0, 320)
-    contenedor.Position = UDim2.new(0.5, -225, 0.5, -160)
-    contenedor.BackgroundColor3 = colores.contenedor
-    contenedor.BorderSizePixel = 0
-    contenedor.Parent = screenGui
-    
-    crearSombra(contenedor)
-    
-    local cornerContenedor = Instance.new("UICorner")
-    cornerContenedor.CornerRadius = UDim.new(0, 16)
-    cornerContenedor.Parent = contenedor
-    
-    local titulo = Instance.new("TextLabel")
-    titulo.Size = UDim2.new(1, -40, 0, 70)
-    titulo.Position = UDim2.new(0, 20, 0, 20)
-    titulo.BackgroundTransparency = 1
-    titulo.Text = "Select Language / Seleccionar Idioma"
-    titulo.TextColor3 = colores.texto
-    titulo.TextSize = 24
-    titulo.Font = Enum.Font.GothamBold
-    titulo.TextWrapped = true
-    titulo.Parent = contenedor
-    
-    local btnEspanol = Instance.new("TextButton")
-    btnEspanol.Size = UDim2.new(0, 180, 0, 50)
-    btnEspanol.Position = UDim2.new(0.5, -90, 0.5, -40)
-    btnEspanol.BackgroundColor3 = colores.primario
-    btnEspanol.BorderSizePixel = 0
-    btnEspanol.Text = "🇪🇸 Español"
-    btnEspanol.TextColor3 = colores.texto
-    btnEspanol.TextSize = 18
-    btnEspanol.Font = Enum.Font.GothamSemibold
-    btnEspanol.Parent = contenedor
-    
-    local cornerEspanol = Instance.new("UICorner")
-    cornerEspanol.CornerRadius = UDim.new(0, 12)
-    cornerEspanol.Parent = btnEspanol
-    
-    local btnIngles = Instance.new("TextButton")
-    btnIngles.Size = UDim2.new(0, 180, 0, 50)
-    btnIngles.Position = UDim2.new(0.5, -90, 0.5, 20)
-    btnIngles.BackgroundColor3 = colores.secundario
-    btnIngles.BorderSizePixel = 0
-    btnIngles.Text = "🇺🇸 English"
-    btnIngles.TextColor3 = colores.texto
-    btnIngles.TextSize = 18
-    btnIngles.Font = Enum.Font.GothamSemibold
-    btnIngles.Parent = contenedor
-    
-    local cornerIngles = Instance.new("UICorner")
-    cornerIngles.CornerRadius = UDim.new(0, 12)
-    cornerIngles.Parent = btnIngles
-    
-    btnEspanol.MouseButton1Click:Connect(function()
-        configuraciones.idioma = "es"
-        configuraciones.textoSearchbar = "Buscar Scripts!"
-        crearConfiguracionOutline()
-    end)
-    
-    btnIngles.MouseButton1Click:Connect(function()
-        configuraciones.idioma = "en"
-        configuraciones.textoSearchbar = "Search Scripts!"
-        crearConfiguracionOutline()
-    end)
+        
+        local fondo = Instance.new("Frame")
+        fondo.Size = UDim2.new(1, 0, 1, 0)
+        fondo.BackgroundColor3 = colores.fondo
+        fondo.BackgroundTransparency = 0.2
+        fondo.Parent = screenGui
+        
+        contenedor = Instance.new("Frame")
+        contenedor.Size = UDim2.new(0, 450, 0, 320)
+        contenedor.Position = UDim2.new(0.5, -225, 0.5, -160)
+        contenedor.BackgroundColor3 = colores.contenedor
+        contenedor.BorderSizePixel = 0
+        contenedor.Parent = screenGui
+        
+        crearSombra(contenedor)
+        
+        local cornerContenedor = Instance.new("UICorner")
+        cornerContenedor.CornerRadius = UDim.new(0, 16)
+        cornerContenedor.Parent = contenedor
+        
+        local titulo = Instance.new("TextLabel")
+        titulo.Size = UDim2.new(1, -40, 0, 70)
+        titulo.Position = UDim2.new(0, 20, 0, 20)
+        titulo.BackgroundTransparency = 1
+        titulo.Text = "Select Language / Seleccionar Idioma"
+        titulo.TextColor3 = colores.texto
+        titulo.TextSize = 24
+        titulo.Font = Enum.Font.GothamBold
+        titulo.TextWrapped = true
+        titulo.Parent = contenedor
+        
+        local btnEspanol = Instance.new("TextButton")
+        btnEspanol.Size = UDim2.new(0, 180, 0, 50)
+        btnEspanol.Position = UDim2.new(0.5, -90, 0.5, -40)
+        btnEspanol.BackgroundColor3 = colores.primario
+        btnEspanol.BorderSizePixel = 0
+        btnEspanol.Text = "🇪🇸 Español"
+        btnEspanol.TextColor3 = colores.texto
+        btnEspanol.TextSize = 18
+        btnEspanol.Font = Enum.Font.GothamSemibold
+        btnEspanol.Parent = contenedor
+        
+        local cornerEspanol = Instance.new("UICorner")
+        cornerEspanol.CornerRadius = UDim.new(0, 12)
+        cornerEspanol.Parent = btnEspanol
+        
+        local btnIngles = Instance.new("TextButton")
+        btnIngles.Size = UDim2.new(0, 180, 0, 50)
+        btnIngles.Position = UDim2.new(0.5, -90, 0.5, 20)
+        btnIngles.BackgroundColor3 = colores.secundario
+        btnIngles.BorderSizePixel = 0
+        btnIngles.Text = "🇺🇸 English"
+        btnIngles.TextColor3 = colores.texto
+        btnIngles.TextSize = 18
+        btnIngles.Font = Enum.Font.GothamSemibold
+        btnIngles.Parent = contenedor
+        
+        local cornerIngles = Instance.new("UICorner")
+        cornerIngles.CornerRadius = UDim.new(0, 12)
+        cornerIngles.Parent = btnIngles
+        
+        btnEspanol.MouseButton1Click:Connect(function()
+            local success, error = pcall(function()
+                configuraciones.idioma = "es"
+                configuraciones.textoSearchbar = "Buscar Scripts!"
+                logInfo("Idioma seleccionado: Español")
+                crearConfiguracionOutline()
+            end)
+            if not success then
+                logError("btnEspanol.MouseButton1Click", error)
+            end
+        end)
+        
+        btnIngles.MouseButton1Click:Connect(function()
+            local success, error = pcall(function()
+                configuraciones.idioma = "en"
+                configuraciones.textoSearchbar = "Search Scripts!"
+                logInfo("Idioma seleccionado: English")
+                crearConfiguracionOutline()
+            end)
+            if not success then
+                logError("btnIngles.MouseButton1Click", error)
+            end
+        end)
     end)
     
     if not success then
