@@ -6,16 +6,69 @@ local StarterGui = game:GetService("StarterGui")
 local carpetaPadre = nil
 local minecraftFont = Enum.Font.Arcade
 
-local function cambiarFontMinecraft(objeto)
-    for _, descendiente in pairs(objeto:GetDescendants()) do
-        if descendiente:IsA("TextLabel") or descendiente:IsA("TextBox") or descendiente:IsA("TextButton") then
-            descendiente.Font = minecraftFont
+-- Sistema de logging
+local logFileName = "DeltaCustom_logs.txt"
+
+local function escribirLog(mensaje, tipoError)
+    local timestamp = os.date("[%Y-%m-%d %H:%M:%S]")
+    local tipoStr = tipoError or "INFO"
+    local logEntry = timestamp .. " [" .. tipoStr .. "] " .. tostring(mensaje) .. "\n"
+    
+    local success = pcall(function()
+        local existingLogs = ""
+        if isfile and isfile(logFileName) then
+            existingLogs = readfile(logFileName)
         end
+        
+        if writefile then
+            writefile(logFileName, existingLogs .. logEntry)
+        else
+            warn("writefile no disponible - Log: " .. logEntry)
+        end
+    end)
+    
+    if not success then
+        warn("Error al escribir log: " .. logEntry)
+    end
+end
+
+local function logError(funcionNombre, error)
+    local mensaje = "Error en " .. funcionNombre .. ": " .. tostring(error)
+    escribirLog(mensaje, "ERROR")
+    warn(mensaje)
+end
+
+local function logInfo(mensaje)
+    escribirLog(mensaje, "INFO")
+    print("[DeltaCustom] " .. mensaje)
+end
+
+local function logWarning(mensaje)
+    escribirLog(mensaje, "WARNING")
+    warn("[DeltaCustom] " .. mensaje)
+end
+
+-- Inicializar log
+logInfo("DeltaCustom iniciado - Version HardUI")
+
+local function cambiarFontMinecraft(objeto)
+    local success, error = pcall(function()
+        for _, descendiente in pairs(objeto:GetDescendants()) do
+            if descendiente:IsA("TextLabel") or descendiente:IsA("TextBox") or descendiente:IsA("TextButton") then
+                descendiente.Font = minecraftFont
+            end
+        end
+    end)
+    
+    if not success then
+        logError("cambiarFontMinecraft", error)
+    else
+        logInfo("Font Minecraft aplicado correctamente")
     end
 end
 
 local function cambiarFontChat()
-    local exito = pcall(function()
+    local exito, error = pcall(function()
         local chatGui = LocalPlayer.PlayerGui:FindFirstChild("Chat")
         if chatGui then
             cambiarFontMinecraft(chatGui)
@@ -75,7 +128,9 @@ local function cambiarFontChat()
     end)
     
     if not exito then
-        warn("Error al cambiar font del chat. Algunos elementos pueden no haberse actualizado.")
+        logError("cambiarFontChat", error)
+    else
+        logInfo("Font del chat cambiado correctamente")
     end
 end
 
@@ -725,10 +780,11 @@ local function animarTransicion(callback)
 end
 
 local function crearSeleccionIdioma()
-    screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "DeltaConfigIntro"
-    screenGui.Parent = CoreGui
-    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local success, error = pcall(function()
+        screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "DeltaConfigIntro"
+        screenGui.Parent = CoreGui
+        screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
     local fondo = Instance.new("Frame")
     fondo.Size = UDim2.new(1, 0, 1, 0)
@@ -801,6 +857,13 @@ local function crearSeleccionIdioma()
         configuraciones.textoSearchbar = "Search Scripts!"
         crearConfiguracionOutline()
     end)
+    end)
+    
+    if not success then
+        logError("crearSeleccionIdioma", error)
+    else
+        logInfo("Interfaz de seleccion de idioma creada")
+    end
 end
 
 local function crearConfiguracionOutline()
@@ -1174,27 +1237,46 @@ local function crearConfiguracionFinal()
 end
 
 local function aplicarConfiguraciones()
-    if configuraciones.fontMinecraft then
-        cambiarFontMinecraft(game.Players.LocalPlayer.PlayerGui)
-        cambiarFontMinecraft(CoreGui)
-        cambiarFontChat()
+    local success, error = pcall(function()
+        logInfo("Iniciando aplicacion de configuraciones...")
+        
+        if configuraciones.fontMinecraft then
+            logInfo("Aplicando font Minecraft...")
+            cambiarFontMinecraft(game.Players.LocalPlayer.PlayerGui)
+            cambiarFontMinecraft(CoreGui)
+            cambiarFontChat()
+        end
+        
+        logInfo("Modificando componentes de Delta...")
+        modificarExecutor()
+        modificarShowcase()
+        modificarNetworkFrame()
+        modificarConsoleTitles()
+        modificarSearchbar()
+        
+        if not configuraciones.noOutline then
+            logInfo("Aplicando efectos de outline...")
+            buscarYModificarScreenGuis()
+        end
+        
+        crearBotonRainbow()
+        logInfo("Configuraciones aplicadas exitosamente")
+    end)
+    
+    if not success then
+        logError("aplicarConfiguraciones", error)
     end
-    
-    modificarExecutor()
-    modificarShowcase()
-    modificarNetworkFrame()
-    modificarConsoleTitles()
-    modificarSearchbar()
-    
-    if not configuraciones.noOutline then
-        buscarYModificarScreenGuis()
-    end
-    
-    crearBotonRainbow()
 end
 
 -- Iniciar con seleccion de idioma
-crearSeleccionIdioma()
+local success, error = pcall(function()
+    logInfo("Iniciando DeltaCustom...")
+    crearSeleccionIdioma()
+end)
+
+if not success then
+    logError("Inicio del script", error)
+end
 
 CoreGui.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "script1.lua" then
