@@ -702,7 +702,26 @@ local textos = {
 }
 
 local function obtenerTexto(clave)
-    return textos[configuraciones.idioma][clave] or textos["es"][clave]
+    local success, result = pcall(function()
+        if not configuraciones or not configuraciones.idioma then
+            logWarning("configuraciones.idioma no definido, usando 'es'")
+            return textos["es"][clave] or "TEXTO_NO_ENCONTRADO"
+        end
+        
+        if not textos[configuraciones.idioma] then
+            logWarning("Idioma " .. configuraciones.idioma .. " no encontrado, usando 'es'")
+            return textos["es"][clave] or "TEXTO_NO_ENCONTRADO"
+        end
+        
+        return textos[configuraciones.idioma][clave] or textos["es"][clave] or "TEXTO_NO_ENCONTRADO"
+    end)
+    
+    if not success then
+        logError("obtenerTexto", result)
+        return "ERROR_TEXTO"
+    end
+    
+    return result
 end
 
 local screenGui = nil
@@ -883,11 +902,19 @@ local function crearSeleccionIdioma()
 end
 
 local function crearConfiguracionOutline()
-    for _, child in pairs(contenedor:GetChildren()) do
-        if child.Name ~= "UICorner" then
-            child:Destroy()
+    local success, error = pcall(function()
+        logInfo("Iniciando crearConfiguracionOutline...")
+        
+        if not contenedor then
+            logError("crearConfiguracionOutline", "contenedor es nil")
+            return
         end
-    end
+        
+        for _, child in pairs(contenedor:GetChildren()) do
+            if child.Name ~= "UICorner" then
+                child:Destroy()
+            end
+        end
     
     contenedor.Size = UDim2.new(0, 650, 0, 480)
     contenedor.Position = UDim2.new(0.5, -325, 0.5, -240)
@@ -1048,14 +1075,24 @@ local function crearConfiguracionOutline()
             crearConfiguracionTexto()
         end)
     end)
+    end)
+    
+    if not success then
+        logError("crearConfiguracionOutline", error)
+    else
+        logInfo("crearConfiguracionOutline completado exitosamente")
+    end
 end
 
 local function crearConfiguracionTexto()
-    for _, child in pairs(contenedor:GetChildren()) do
-        if child.Name ~= "UICorner" then
-            child:Destroy()
+    local success, error = pcall(function()
+        logInfo("Iniciando crearConfiguracionTexto...")
+        
+        for _, child in pairs(contenedor:GetChildren()) do
+            if child.Name ~= "UICorner" then
+                child:Destroy()
+            end
         end
-    end
     
     local titulo = Instance.new("TextLabel")
     titulo.Size = UDim2.new(1, -40, 0, 50)
@@ -1165,6 +1202,13 @@ local function crearConfiguracionTexto()
             crearConfiguracionFinal()
         end)
     end)
+    end)
+    
+    if not success then
+        logError("crearConfiguracionTexto", error)
+    else
+        logInfo("crearConfiguracionTexto completado exitosamente")
+    end
 end
 
 local function crearConfiguracionFinal()
