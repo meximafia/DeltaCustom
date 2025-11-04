@@ -729,6 +729,11 @@ local contenedor = nil
 local previewFrame = nil
 local paletaFrame = nil
 
+-- Declaraciones forward de funciones
+local crearConfiguracionOutline
+local crearConfiguracionTexto
+local crearConfiguracionFinal
+
 local function crearSombra(parent)
     local sombra = Instance.new("Frame")
     sombra.Name = "Sombra"
@@ -901,7 +906,7 @@ local function crearSeleccionIdioma()
     end
 end
 
-local function crearConfiguracionOutline()
+crearConfiguracionOutline = function()
     local success, error = pcall(function()
         logInfo("Iniciando crearConfiguracionOutline...")
         
@@ -1084,7 +1089,7 @@ local function crearConfiguracionOutline()
     end
 end
 
-local function crearConfiguracionTexto()
+crearConfiguracionTexto = function()
     local success, error = pcall(function()
         logInfo("Iniciando crearConfiguracionTexto...")
         
@@ -1211,8 +1216,11 @@ local function crearConfiguracionTexto()
     end
 end
 
-local function crearConfiguracionFinal()
-    for _, child in pairs(contenedor:GetChildren()) do
+crearConfiguracionFinal = function()
+    local success, error = pcall(function()
+        logInfo("Iniciando crearConfiguracionFinal...")
+        
+        for _, child in pairs(contenedor:GetChildren()) do
         if child.Name ~= "UICorner" then
             child:Destroy()
         end
@@ -1294,6 +1302,13 @@ local function crearConfiguracionFinal()
     cancelarBtn.MouseButton1Click:Connect(function()
         screenGui:Destroy()
     end)
+    end)
+    
+    if not success then
+        logError("crearConfiguracionFinal", error)
+    else
+        logInfo("crearConfiguracionFinal completado exitosamente")
+    end
 end
 
 local function aplicarConfiguraciones()
